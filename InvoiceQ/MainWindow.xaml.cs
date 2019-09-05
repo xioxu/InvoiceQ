@@ -1,10 +1,13 @@
-﻿using System;
+﻿using CefSharp;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Web.Script.Serialization;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace InvoiceQ
@@ -20,47 +23,72 @@ namespace InvoiceQ
 
         public MainWindow()
         {
+            CefSettings cfsettings = new CefSettings();
+            cfsettings.IgnoreCertificateErrors = true;
+            Cef.Initialize(cfsettings);
+
             InitializeComponent();
             listView.ItemsSource = images;
+
+       
+
+            browser.ConsoleMessage += Browser_ConsoleMessage;
+            
             //browser.Navigate(new Uri("https://inv-veri.chinatax.gov.cn/"));
+        }
+
+        private void Browser_ConsoleMessage(object sender, CefSharp.ConsoleMessageEventArgs e)
+        {
+            Console.Write(e.Message);
+        }
+
+        private void invoiceTxt_OnKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                doInput();
+            }
         }
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.AddExtension = true;
-            dlg.Multiselect = true;
-            dlg.DefaultExt = ".pdf";
-            dlg.Filter = "PDF Documents(*.pdf)|*.pdf";
-            dlg.Title = "打开电子发票文件";
-            DialogResult result = dlg.ShowDialog();
-            if (result != System.Windows.Forms.DialogResult.OK) return;
+            doInput();
+        }
 
-            SynchronizationContext ViewContext = SynchronizationContext.Current;
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.DoWork += (o, ea) =>
+        private void doInput()
+        {
+            var infoiceInfo = invoiceTxt.Text;
+
+            if (infoiceInfo.Length < 1)
             {
-                foreach (string f in (string[])ea.Argument)
+                System.Windows.Forms.MessageBox.Show("没有检测到发票信息");
+            }
+            else
+            {
+
+                SynchronizationContext ViewContext = SynchronizationContext.Current;
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.DoWork += (o, ea) =>
                 {
                     try
                     {
-                        ViewContext.Post(x => images.Add((Invoice)x), new Invoice(f));
+                        ViewContext.Post(x => images.Add((Invoice)x), new Invoice((string)ea.Argument));
                     }
                     catch (Exception ex)
                     {
-                        System.Windows.Forms.MessageBox.Show("加载文件 " + f + " 失败: " + ex.Message);
+                        System.Windows.Forms.MessageBox.Show("无效发票信息");
                     }
-                }
-            };
+                };
 
-            worker.RunWorkerCompleted += (o, ea) =>
-            {
-                listViewBusy.IsBusy = false;
-            };
-            listViewBusy.IsBusy = true;
-            worker.RunWorkerAsync(dlg.FileNames);
+                worker.RunWorkerCompleted += (o, ea) =>
+                {
+                    listViewBusy.IsBusy = false;
+                };
+                listViewBusy.IsBusy = true;
+                worker.RunWorkerAsync(infoiceInfo);
+                invoiceTxt.Text = "";
+            }
         }
-
 
         private void btnPush_Click(object sender, RoutedEventArgs e)
         {
@@ -136,7 +164,7 @@ namespace InvoiceQ
                 {
                     BmpBitmapEncoder bitmapEncoder = new BmpBitmapEncoder();
                     bitmapEncoder.Frames.Add(BitmapFrame.Create(i.Result));
-                    FileStream fs = new FileStream(Path.Combine(path, Path.GetFileName(Path.ChangeExtension(i.File, ".bmp"))), FileMode.Create);
+                    FileStream fs = new FileStream(Path.Combine(path, Path.GetFileName(Path.ChangeExtension(i.Number, ".bmp"))), FileMode.Create);
                     bitmapEncoder.Save(fs);
                     fs.Close();
                 }

@@ -7,7 +7,7 @@
         xmlns:xwt="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
         xmlns:cefSharp="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
         mc:Ignorable="d"
-        Title="InvoiceQ" Height="597.831" Width="892.975" WindowState="Maximized">
+        Title="发票查询助手-扫描枪版-mailme.xu@gmail.com" Height="597.831" Width="892.975" WindowState="Maximized">
     <Grid Margin="0,0,0,10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="256" />
@@ -16,28 +16,74 @@
         </Grid.ColumnDefinitions>
         <xwt:BusyIndicator x:Name="listViewBusy" Grid.Column="0">
             <DockPanel LastChildFill="True">
+                <DockPanel Height="60" DockPanel.Dock="Top" Margin="0,0,0,0" FocusManager.FocusedElement="{Binding ElementName=invoiceTxt}">
+                    <TextBox  x:Name="invoiceTxt"
+                              TextWrapping="Wrap"
+                             PreviewKeyDown="invoiceTxt_OnKeyDown">
+                             
+
+                        <TextBox.InputBindings>
+                            <KeyBinding Command="{Binding KeyEventCommand}" Key="Enter"/>
+                        </TextBox.InputBindings>
+                        <TextBox.Resources>
+                            <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.3" Stretch="None" AlignmentX="Left">
+                                <VisualBrush.Visual>
+                                    <TextBlock FontStyle="Italic" Text="请使用扫描枪扫描发票二维码"/>
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </TextBox.Resources>
+                        <TextBox.Style>
+                            <Style TargetType="TextBox">
+                                <Style.Triggers>
+                                    <Trigger Property="Text" Value="{x:Null}">
+                                        <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
+                                    </Trigger>
+                                    <Trigger Property="Text" Value="">
+                                        <Setter Property="Background" Value="{StaticResource HelpBrush}"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+       
+                </DockPanel>
                 <DockPanel Height="40" DockPanel.Dock="Top" Margin="0,0,0,0">
-                    <xwt:IconButton x:Name="btnAdd" Background="{x:Null}" MouseOverBackground="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" Click="btnAdd_Click"  >
+                    <xwt:IconButton Visibility="Hidden" x:Name="btnAdd" Background="{x:Null}" MouseOverBackground="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" Click="btnAdd_Click"  >
                         <xwt:IconButton.Icon>
                             <Image Source="Resources/add.png"/>
                         </xwt:IconButton.Icon>
                     </xwt:IconButton>
-                    <xwt:IconButton x:Name="btnDel"  Background="{x:Null}" MouseOverBackground="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" >
+                    <xwt:IconButton Visibility="Hidden" x:Name="btnDel"  Background="{x:Null}" MouseOverBackground="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" >
                         <xwt:IconButton.Icon>
                             <Image Source="Resources/minus.png"/>
                         </xwt:IconButton.Icon>
                     </xwt:IconButton>
                     <xwt:IconButton x:Name="btnPush" Width="40" HorizontalAlignment="Right" DockPanel.Dock="Right" Background="{x:Null}" MouseOverBackground="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" Click="btnPush_Click" IsEnabled="{Binding ReadyToPush, ElementName=window}" >
                         <xwt:IconButton.Icon>
-                            <Image Source="Resources/arrow-double-right.png"/>
+
+                            <Image >
+                                    <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=ReadyToPush, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="True">
+                                                    <Setter Property="Source" Value="Resources/arrow-double-right.png" />
+                                                </DataTrigger>
+                                            <DataTrigger Binding="{Binding Path=ReadyToPush, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" Value="False">
+                                                    <Setter Property="Source" Value="Resources/disabledPush.png" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+
                         </xwt:IconButton.Icon>
                     </xwt:IconButton>
-                    <xwt:IconButton x:Name="btnShot" Width="40" HorizontalAlignment="Right" DockPanel.Dock="Right" Background="{x:Null}" MouseOverBackground="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" Click="btnShot_Click">
+                    <xwt:IconButton Visibility="Hidden" x:Name="btnShot" Width="40" HorizontalAlignment="Right" DockPanel.Dock="Right" Background="{x:Null}" MouseOverBackground="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" Click="btnShot_Click">
                         <xwt:IconButton.Icon>
                             <Image Source="pack://siteoforigin:,,,/Resources/Screenshot.png"/>
                         </xwt:IconButton.Icon>
                     </xwt:IconButton>
-                    <xwt:IconButton x:Name="btnSave" Width="40" HorizontalAlignment="Right" DockPanel.Dock="Right" Background="{x:Null}" MouseOverBackground="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" Click="btnSave_Click">
+                    <xwt:IconButton Visibility="Hidden" x:Name="btnSave" Width="40" HorizontalAlignment="Right" DockPanel.Dock="Right" Background="{x:Null}" MouseOverBackground="{DynamicResource {x:Static SystemColors.ControlLightLightBrushKey}}" Click="btnSave_Click">
                         <xwt:IconButton.Icon>
                             <Image Source="pack://siteoforigin:,,,/Resources/save.png"/>
                         </xwt:IconButton.Icon>

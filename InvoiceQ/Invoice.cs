@@ -16,42 +16,17 @@ namespace InvoiceQ
     {
         private BitmapSource result;
 
-        public Invoice(String file)
+        public Invoice(String invoiceTxt)
         {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                PdfDocument doc = new PdfDocument();
-                doc.LoadFromFile(file);
-                Image img = doc.SaveAsImage(0);
-                img.Save(ms, ImageFormat.Bmp);
-                ms.Seek(0, SeekOrigin.Begin);
-                var bi = new BitmapImage();
-                bi.BeginInit();
-                bi.CacheOption = BitmapCacheOption.OnLoad;
-                bi.StreamSource = ms;
-                bi.EndInit();
-                bi.Freeze();
-                doc.Close();
-                Image = bi;
-            }
-            QRCodeReader reader = new QRCodeReader();
-            LuminanceSource luminanceSource = new BitmapSourceLuminanceSource(Image);
-            Result result = reader.decode(new BinaryBitmap(new ZXing.Common.HybridBinarizer(luminanceSource)));
-            if ( result == null)
-            {
-                throw new FileFormatException("未找到发票二维码");
-            }
-            File = file;
-            RawText = result.Text;
-            string[] splited = RawText.Split(',');
+            RawText = invoiceTxt;
+            string[] splited = invoiceTxt.Split(',');
             Code = splited[2];
             Number = splited[3];
             Amount = double.Parse(splited[4]);
             Date = DateTime.ParseExact(splited[5], "yyyyMMdd", CultureInfo.InvariantCulture);
             CheckCode = splited[6];
         }
-
-        public string File { get; set; }
+        
         public BitmapSource Image { get; set; }
         public string RawText { get; set; }
         public string Code { get; set; }
@@ -86,12 +61,12 @@ namespace InvoiceQ
         {
             Invoice invoice = obj as Invoice;
             if (invoice == null) return false;
-            return this.File.Equals(invoice.File);
+            return this.RawText.Equals(invoice.RawText);
         }
 
         public override int GetHashCode()
         {
-            return this.File.GetHashCode();
+            return this.RawText.GetHashCode();
         }
     }
 }
